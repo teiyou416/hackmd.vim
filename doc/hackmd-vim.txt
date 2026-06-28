@@ -1,0 +1,209 @@
+*hackmd-vim.txt*       Edit Markdown locally and sync notes to HackMD
+
+==============================================================================
+CONTENTS                                                   *hackmd-vim-contents*
+
+1. Overview                                             |hackmd-vim-overview|
+2. Requirements                                         |hackmd-vim-requirements|
+3. Commands                                             |hackmd-vim-commands|
+4. Workspace                                            |hackmd-vim-workspace|
+5. Configuration                                        |hackmd-vim-configuration|
+6. Typical workflow                                     |hackmd-vim-workflow|
+7. Conflict protection                                  |hackmd-vim-conflicts|
+
+==============================================================================
+OVERVIEW                                                   *hackmd-vim-overview*
+
+hackmd-vim is a Vim plugin for editing Markdown locally and syncing notes to
+HackMD through `hackmd-cli`.
+
+Local sync metadata is stored in YAML front matter:
+>
+  ---
+  hackmd_id: your-note-id
+  hackmd_remote_hash: last-synced-content-hash
+  team: your-team-path
+  ---
+<
+The plugin strips `hackmd_id`, `hackmd_remote_hash`, and `team` before sending
+content to HackMD. Those fields stay local.
+
+==============================================================================
+REQUIREMENTS                                           *hackmd-vim-requirements*
+
+- Vim with +eval
+- `hackmd-cli` installed
+- `hackmd-cli` already authenticated
+
+Check authentication:
+>
+  hackmd-cli whoami
+<
+Log in if needed:
+>
+  hackmd-cli login
+<
+
+==============================================================================
+COMMANDS                                                   *hackmd-vim-commands*
+
+These commands are registered for Markdown buffers.
+
+                                                        *:HPush*
+:HPush
+        Save the current file, then create or update the remote note.
+
+                                                        *:HPush!*
+:HPush!
+        Force-push the current file even when the stored remote hash is stale.
+
+                                                        *:HPull*
+:HPull
+        Pull remote content into the current file using `hackmd_id`.
+
+                                                        *:HDelete*
+:HDelete
+        Delete the remote note bound to the current file. The local file is
+        kept, and `hackmd_id` plus `hackmd_remote_hash` are removed on success.
+
+                                                        *:HDelete!*
+:HDelete!
+        Delete the bound remote note without confirmation.
+
+                                                        *:HSync*
+:HSync
+        Run |:HPush| when there is no `hackmd_id`; otherwise run |:HPull|.
+
+                                                        *:HWorkspaceInit*
+:HWorkspaceInit [team]
+        Create `.hackmd-vim.json` in the current directory.
+
+                                                        *:HWorkspaceUse*
+:HWorkspaceUse {team}
+        Set the current workspace team. If no `.hackmd-vim.json` exists in the
+        current directory tree, one is created in the current working directory.
+
+                                                        *:HWorkspaceInfo*
+:HWorkspaceInfo
+        Show the workspace config path, root, scan directory, team, and Markdown
+        file count.
+
+                                                        *:HWorkspaceImport*
+:HWorkspaceImport
+        List remote notes, create missing local Markdown files, then pull note
+        content.
+
+                                                        *:HWorkspacePull*
+:HWorkspacePull
+        Pull all workspace files that already have `hackmd_id`.
+
+                                                        *:HWorkspacePush*
+:HWorkspacePush
+        Push all Markdown files under the workspace.
+
+                                                        *:HWorkspacePush!*
+:HWorkspacePush!
+        Force-push all workspace Markdown files.
+
+                                                        *:HWorkspaceDelete!*
+:HWorkspaceDelete!
+        Delete remote notes for all workspace files that have `hackmd_id`.
+        The non-bang form refuses to run.
+
+Default mappings:
+>
+  <leader>hp    :HPush
+  <leader>hl    :HPull
+  <leader>hs    :HSync
+<
+
+==============================================================================
+WORKSPACE                                                 *hackmd-vim-workspace*
+
+A workspace is a directory containing `.hackmd-vim.json`. The plugin searches
+upward from the current file to find it.
+
+Example:
+>
+  {
+    "team": "your-team-path",
+    "notes_dir": "."
+  }
+<
+`team` is the default HackMD team path. `notes_dir` is the directory scanned
+for Markdown files, relative to the workspace root.
+
+Use this before batch operations:
+>
+  :HWorkspaceInfo
+<
+
+==============================================================================
+CONFIGURATION                                         *hackmd-vim-configuration*
+
+Default CLI executable:
+>
+  let g:hackmd_cli = 'hackmd-cli'
+<
+Use another executable or absolute path:
+>
+  let g:hackmd_cli = '/path/to/hackmd-cli'
+<
+Reuse a shell alias:
+>
+  let g:hackmd_cli = 'hack'
+  let g:hackmd_use_shell_aliases = 1
+  let g:hackmd_alias_shell = 'zsh'
+<
+Override command templates:
+>
+  let g:hackmd_command_templates = {
+        \ 'create': '{cli} notes create --output=json',
+        \ 'team_create': '{cli} team-notes create --teamPath={team} --output=json',
+        \ 'write': '{cli} notes update --noteId={note_id} --content={content}',
+        \ 'team_write': '{cli} team-notes update --teamPath={team} --noteId={note_id} --content={content}',
+        \ 'read': '{cli} export --noteId={note_id}',
+        \ 'list': '{cli} notes --output=json',
+        \ 'team_list': '{cli} team-notes --teamPath={team} --output=json',
+        \ 'delete': '{cli} notes delete --noteId={note_id}',
+        \ 'team_delete': '{cli} team-notes delete --teamPath={team} --noteId={note_id}',
+        \ }
+<
+
+==============================================================================
+WORKFLOW                                                   *hackmd-vim-workflow*
+
+Create or switch a team workspace:
+>
+  :HWorkspaceUse your-team-path
+  :HWorkspaceInfo
+<
+Import remote notes:
+>
+  :HWorkspaceImport
+<
+Create or update a single note:
+>
+  :HPush
+<
+Pull a single note:
+>
+  :HPull
+<
+Delete a single remote note:
+>
+  :HDelete
+<
+
+==============================================================================
+CONFLICTS                                                 *hackmd-vim-conflicts*
+
+After each successful push or pull, the plugin updates `hackmd_remote_hash`.
+Normal |:HPush| exports the current remote note and compares hashes first. If
+the remote content changed since the last sync, the push stops.
+
+Use |:HPush!| or |:HWorkspacePush!| only when you intentionally want to
+overwrite remote content.
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

@@ -1,0 +1,97 @@
+#!/bin/sh
+
+set -eu
+
+remote_dir="${HACKMD_FAKE_DIR:?HACKMD_FAKE_DIR is required}"
+mkdir -p "$remote_dir"
+
+next_id() {
+    counter_file="$remote_dir/.counter"
+    if [ -f "$counter_file" ]; then
+        counter="$(cat "$counter_file")"
+    else
+        counter=0
+    fi
+    counter=$((counter + 1))
+    while [ -f "$remote_dir/note$counter.md" ]; do
+        counter=$((counter + 1))
+    done
+    printf '%s' "$counter" > "$counter_file"
+    printf 'note%s' "$counter"
+}
+
+arg_value() {
+    name="$1"
+    shift
+    for arg in "$@"; do
+        case "$arg" in
+            "$name="*)
+                printf '%s' "${arg#*=}"
+                return 0
+                ;;
+        esac
+    done
+    return 1
+}
+
+title_from_content() {
+    title="$(printf '%s\n' "$1" | sed -n 's/^# *//p' | sed -n '1p')"
+    if [ -z "$title" ]; then
+        title="Untitled"
+    fi
+    printf '%s' "$title"
+}
+
+json_escape() {
+    printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
+}
+
+case "${1:-}" in
+    export)
+        note_id="$(arg_value --noteId "$@")"
+        cat "$remote_dir/$note_id.md"
+        ;;
+    notes)
+        case "${2:-}" in
+            create)
+                content="$(cat)"
+                note_id="$(next_id)"
+                printf '%s' "$content" > "$remote_dir/$note_id.md"
+                title="$(json_escape "$(title_from_content "$content")")"
+                printf '[{"id":"%s","title":"%s"}]\n' "$note_id" "$title"
+                ;;
+            update)
+                note_id="$(arg_value --noteId "$@")"
+                content="$(arg_value --content "$@")"
+                printf '%s' "$content" > "$remote_dir/$note_id.md"
+                ;;
+            delete)
+                note_id="$(arg_value --noteId "$@")"
+                rm -f "$remote_dir/$note_id.md"
+                ;;
+            *)
+                printf '['
+                first=1
+                for file in "$remote_dir"/*.md; do
+                    [ -f "$file" ] || continue
+                    note_id="$(basename "$file" .md)"
+                    title="$(json_escape "$(title_from_content "$(cat "$file")")")"
+                    if [ "$first" -eq 0 ]; then
+                        printf ','
+                    fi
+                    printf '{"id":"%s","title":"%s"}' "$note_id" "$title"
+                    first=0
+                done
+                printf ']\n'
+                ;;
+        esac
+        ;;
+    team-notes)
+        shift
+        "$0" notes "$@"
+        ;;
+    *)
+        echo "unsupported fake command: $*" >&2
+        exit 2
+        ;;
+esac
