@@ -70,11 +70,20 @@ function! s:RunCommand(name, args, ...) abort
     return {'ok': 1, 'output': l:output}
 endfunction
 
-function! s:FindWorkspaceConfig() abort
-    let l:start = expand('%:p:h')
-    if empty(l:start)
-        let l:start = getcwd()
+function! s:CurrentFileDirOrCwd() abort
+    if empty(bufname('%')) || !empty(&buftype)
+        return getcwd()
     endif
+
+    let l:file = expand('%:p')
+    if empty(l:file)
+        return getcwd()
+    endif
+    return fnamemodify(l:file, ':p:h')
+endfunction
+
+function! s:FindWorkspaceConfig() abort
+    let l:start = s:CurrentFileDirOrCwd()
     return findfile(s:workspace_file, l:start . ';')
 endfunction
 
@@ -547,6 +556,10 @@ endfunction
 
 " 一键保存并上传当前文件。
 function! hackmd#BufferPush(force) abort
+    if empty(bufname('%')) || !empty(&buftype) || empty(expand('%:p'))
+        call s:EchoError('当前 buffer 没有关联文件，无法上传。')
+        return
+    endif
     write
     call s:PushFile(expand('%:p'), a:force)
     edit

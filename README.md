@@ -101,6 +101,7 @@ Default mappings:
 ## Workspace
 
 A workspace is any directory containing `.hackmd-vim.json`. The plugin searches upward from the current file location to find it.
+When the current buffer has no file, such as on a startify screen, workspace commands search upward from Vim's current working directory.
 
 Example:
 

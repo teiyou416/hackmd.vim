@@ -14,6 +14,7 @@ let $HACKMD_FAKE_DIR = s:remote
 let g:hackmd_cli = s:repo . '/test/fake-hackmd-cli'
 
 execute 'source' fnameescape(s:repo . '/autoload/hackmd.vim')
+execute 'source' fnameescape(s:repo . '/plugin/hackmd.vim')
 
 function! s:Fail(message) abort
     throw a:message
@@ -40,6 +41,13 @@ call hackmd#WorkspaceInit('')
 call hackmd#WorkspaceUse('test-team')
 call s:AssertMatch('"team":"test-team"', s:Read(s:workspace . '/.hackmd-vim.json'), 'workspace use should update team')
 call hackmd#WorkspaceInfo()
+enew
+setlocal buftype=nofile
+setlocal filetype=startify
+call s:AssertEqual(2, exists(':HWorkspaceInfo'), 'workspace commands should be available outside markdown buffers')
+call s:AssertEqual(2, exists(':HPush'), 'buffer commands should be available outside markdown buffers')
+call hackmd#WorkspaceInfo()
+setlocal buftype=
 
 " Push creates a remote note, strips plugin front matter, and writes metadata.
 let s:note = s:workspace . '/local.md'

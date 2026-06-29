@@ -92,6 +92,7 @@ ln -s /Users/teiyou/dev/hackmd-vim ~/.vim/pack/plugins/start/hackmd-vim
 ## Workspace
 
 workspace 是一个包含 `.hackmd-vim.json` 的目录。插件会从当前文件目录向上查找这个配置文件。
+如果当前 buffer 没有关联文件，例如在 startify 页面，workspace 命令会从 Vim 的当前工作目录向上查找。
 
 示例：
 
