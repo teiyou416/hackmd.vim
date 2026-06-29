@@ -79,6 +79,7 @@ ln -s /Users/teiyou/dev/hackmd-vim ~/.vim/pack/plugins/start/hackmd-vim
 | `:HWorkspacePull` | 批量拉取 workspace 下所有带 `hackmd_id` 的文件 |
 | `:HWorkspaceDelete!` | 批量删除 workspace 下所有带 `hackmd_id` 的远端 note |
 | `:HWorkspaceImport` | 列出远端 notes，为缺失文件创建本地 `.md`，然后拉取内容 |
+| `:HWorkspaceList` | 列出当前账号已加入的 HackMD workspace/team |
 | `:HWorkspaceInfo` | 显示当前 workspace 配置文件、根目录、扫描目录、team 和 Markdown 文件数量 |
 
 默认快捷键：
@@ -147,6 +148,7 @@ let g:hackmd_command_templates = {
       \ 'read': '{cli} export --noteId={note_id}',
       \ 'list': '{cli} notes --output=json',
       \ 'team_list': '{cli} team-notes --teamPath={team} --output=json',
+      \ 'workspace_list': '{cli} teams --output=json',
       \ 'delete': '{cli} notes delete --noteId={note_id}',
       \ 'team_delete': '{cli} team-notes delete --teamPath={team} --noteId={note_id}',
       \ }
@@ -161,6 +163,8 @@ let g:hackmd_command_templates = {
 - `{content}`
 
 所有占位符值都会经过 shell escaping。
+
+`:HWorkspaceList` 依赖 `workspace_list` 输出 JSON。如果你安装的 `hackmd-cli` 使用不同命令列出已加入的 team/workspace，可以覆盖这个模板。
 
 ## 使用流程
 

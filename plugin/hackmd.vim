@@ -16,6 +16,7 @@ command! -bang HWorkspacePush call hackmd#WorkspacePush(<bang>0)
 command! HWorkspacePull call hackmd#WorkspacePull()
 command! -bang HWorkspaceDelete call hackmd#WorkspaceDelete(<bang>0)
 command! HWorkspaceImport call hackmd#WorkspaceImport()
+command! HWorkspaceList call hackmd#WorkspaceList()
 command! HWorkspaceInfo call hackmd#WorkspaceInfo()
 
 " 定义一个自动命令组：当文件类型为 markdown 时，绑定 buffer 级别的快捷键

@@ -71,7 +71,7 @@ For temporary local development, you can also load it manually:
 
 ## Commands
 
-These commands are registered only for Markdown buffers.
+Commands are available globally. The default mappings are only registered for Markdown buffers.
 
 | Command | Description |
 | --- | --- |
@@ -88,6 +88,7 @@ These commands are registered only for Markdown buffers.
 | `:HWorkspacePull` | Pull all workspace files that already have `hackmd_id` |
 | `:HWorkspaceDelete!` | Delete remote notes for all workspace files that have `hackmd_id` |
 | `:HWorkspaceImport` | List remote notes, create missing local files, then pull note content |
+| `:HWorkspaceList` | List HackMD workspaces/teams joined by the authenticated account |
 | `:HWorkspaceInfo` | Show the workspace config, root, scan directory, team, and Markdown file count |
 
 Default mappings:
@@ -156,6 +157,7 @@ let g:hackmd_command_templates = {
       \ 'read': '{cli} export --noteId={note_id}',
       \ 'list': '{cli} notes --output=json',
       \ 'team_list': '{cli} team-notes --teamPath={team} --output=json',
+      \ 'workspace_list': '{cli} teams --output=json',
       \ 'delete': '{cli} notes delete --noteId={note_id}',
       \ 'team_delete': '{cli} team-notes delete --teamPath={team} --noteId={note_id}',
       \ }
@@ -170,6 +172,8 @@ Available placeholders:
 - `{content}`
 
 All placeholder values are shell-escaped.
+
+`:HWorkspaceList` expects JSON output from `workspace_list`. If your installed `hackmd-cli` uses a different command to list joined teams/workspaces, override that template.
 
 ## Typical workflow
 

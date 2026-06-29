@@ -49,6 +49,11 @@ call s:AssertEqual(2, exists(':HPush'), 'buffer commands should be available out
 call hackmd#WorkspaceInfo()
 setlocal buftype=
 
+let s:workspaces = hackmd#WorkspaceList()
+call s:AssertEqual(2, len(s:workspaces), 'workspace list should parse joined teams')
+call s:AssertEqual('test-team', s:workspaces[0].path, 'workspace list should include team path')
+call s:AssertEqual('Test Team', s:workspaces[0].name, 'workspace list should include team name')
+
 " Push creates a remote note, strips plugin front matter, and writes metadata.
 let s:note = s:workspace . '/local.md'
 call writefile(['# Local title', '', 'body'], s:note)

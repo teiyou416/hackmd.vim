@@ -90,6 +90,9 @@ case "${1:-}" in
         shift
         "$0" notes "$@"
         ;;
+    teams)
+        printf '[{"path":"test-team","name":"Test Team"},{"path":"another-team","name":"Another Team"}]\n'
+        ;;
     *)
         echo "unsupported fake command: $*" >&2
         exit 2

@@ -47,7 +47,8 @@ Log in if needed:
 ==============================================================================
 COMMANDS                                                   *hackmd-vim-commands*
 
-These commands are registered for Markdown buffers.
+Commands are available globally. The default mappings are only registered for
+Markdown buffers.
 
                                                         *:HPush*
 :HPush
@@ -92,6 +93,10 @@ These commands are registered for Markdown buffers.
 :HWorkspaceImport
         List remote notes, create missing local Markdown files, then pull note
         content.
+
+                                                        *:HWorkspaceList*
+:HWorkspaceList
+        List HackMD workspaces/teams joined by the authenticated account.
 
                                                         *:HWorkspacePull*
 :HWorkspacePull
@@ -167,10 +172,14 @@ Override command templates:
         \ 'read': '{cli} export --noteId={note_id}',
         \ 'list': '{cli} notes --output=json',
         \ 'team_list': '{cli} team-notes --teamPath={team} --output=json',
+        \ 'workspace_list': '{cli} teams --output=json',
         \ 'delete': '{cli} notes delete --noteId={note_id}',
         \ 'team_delete': '{cli} team-notes delete --teamPath={team} --noteId={note_id}',
         \ }
 <
+`:HWorkspaceList` expects JSON output from `workspace_list`. Override that
+template if your installed `hackmd-cli` uses a different command to list joined
+teams/workspaces.
 
 ==============================================================================
 WORKFLOW                                                   *hackmd-vim-workflow*

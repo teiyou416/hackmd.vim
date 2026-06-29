@@ -10,6 +10,7 @@ let s:default_command_templates = {
             \ 'read': '{cli} export --noteId={note_id}',
             \ 'list': '{cli} notes --output=json',
             \ 'team_list': '{cli} team-notes --teamPath={team} --output=json',
+            \ 'workspace_list': '{cli} teams --output=json',
             \ 'delete': '{cli} notes delete --noteId={note_id}',
             \ 'team_delete': '{cli} team-notes delete --teamPath={team} --noteId={note_id}',
             \ }
@@ -484,6 +485,92 @@ function! s:ParseNotesList(output) abort
     return l:notes
 endfunction
 
+function! s:JsonItems(output, context) abort
+    if !exists('*json_decode')
+        call s:EchoError('hackmd-vim requires json_decode() to parse ' . a:context . '.')
+        return []
+    endif
+
+    try
+        let l:decoded = json_decode(a:output)
+    catch
+        call s:EchoError('无法解析 hackmd-cli ' . a:context . ' JSON 输出。')
+        return []
+    endtry
+
+    if type(l:decoded) == type([])
+        return l:decoded
+    endif
+    if type(l:decoded) == type({})
+        for l:key in ['workspaces', 'teams', 'data', 'items', 'result']
+            if has_key(l:decoded, l:key) && type(l:decoded[l:key]) == type([])
+                return l:decoded[l:key]
+            endif
+        endfor
+        return [l:decoded]
+    endif
+    return []
+endfunction
+
+function! s:FirstStringValue(item, keys) abort
+    for l:key in a:keys
+        if has_key(a:item, l:key) && !empty(a:item[l:key])
+            return printf('%s', a:item[l:key])
+        endif
+    endfor
+    return ''
+endfunction
+
+function! s:ParseWorkspaceList(output) abort
+    let l:items = s:JsonItems(a:output, 'workspace list')
+    let l:workspaces = []
+    for l:item in l:items
+        if type(l:item) == type('')
+            call add(l:workspaces, {'path': l:item, 'name': l:item})
+            continue
+        endif
+        if type(l:item) != type({})
+            continue
+        endif
+
+        let l:path = s:FirstStringValue(l:item, ['path', 'teamPath', 'team_path', 'workspacePath', 'workspace_path', 'urlPath', 'url_path', 'slug', 'id'])
+        let l:name = s:FirstStringValue(l:item, ['name', 'title', 'displayName', 'display_name'])
+        if empty(l:path)
+            let l:path = l:name
+        endif
+        if empty(l:name)
+            let l:name = l:path
+        endif
+        if !empty(l:path)
+            call add(l:workspaces, {'path': l:path, 'name': l:name})
+        endif
+    endfor
+    return l:workspaces
+endfunction
+
+function! s:ListWorkspaces() abort
+    let l:result = s:RunCommand('workspace_list', {})
+    if !l:result.ok
+        return []
+    endif
+
+    let l:workspaces = s:ParseWorkspaceList(l:result.output)
+    if empty(l:workspaces)
+        echom 'HackMD workspaces: 0'
+        return []
+    endif
+
+    echom 'HackMD workspaces: ' . len(l:workspaces)
+    for l:workspace in l:workspaces
+        let l:line = '  ' . l:workspace.path
+        if l:workspace.name !=# l:workspace.path
+            let l:line .= '  ' . l:workspace.name
+        endif
+        echom l:line
+    endfor
+    return l:workspaces
+endfunction
+
 function! s:SlugifyTitle(title) abort
     let l:slug = tolower(a:title)
     let l:slug = substitute(l:slug, '[\/:*?"<>|]', '-', 'g')
@@ -701,6 +788,10 @@ endfunction
 
 function! hackmd#WorkspaceImport() abort
     call s:ImportWorkspaceNotes()
+endfunction
+
+function! hackmd#WorkspaceList() abort
+    return s:ListWorkspaces()
 endfunction
 
 function! hackmd#WorkspaceInfo() abort
