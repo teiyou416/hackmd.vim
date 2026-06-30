@@ -156,8 +156,8 @@ let s:default_command_templates = {
             \ 'whoami': '{cli} whoami',
             \ 'create': '{cli} notes create --title={title} --output=json',
             \ 'team_create': '{cli} team-notes create --teamPath={team} --title={title} --output=json',
-            \ 'write': '{cli} notes update --noteId={note_id} --content={content}',
-            \ 'team_write': '{cli} team-notes update --teamPath={team} --noteId={note_id} --content={content}',
+            \ 'write': '{cli} notes update --noteId={note_id} --content="$(cat {content_file})"',
+            \ 'team_write': '{cli} team-notes update --teamPath={team} --noteId={note_id} --content="$(cat {content_file})"',
             \ 'read': '{cli} export --noteId={note_id}',
             \ 'list': '{cli} notes --output=json',
             \ 'team_list': '{cli} team-notes --teamPath={team} --output=json',
@@ -237,6 +237,17 @@ function! s:RunCommand(name, args, ...) abort
         return {'ok': 0, 'output': l:output}
     endif
     return {'ok': 1, 'output': l:output}
+endfunction
+
+function! s:RunCommandWithContentFile(name, args, content) abort
+    let l:content_file = tempname()
+    let l:args = extend(copy(a:args), {'content_file': l:content_file})
+    try
+        call writefile(split(a:content, "\n", 1), l:content_file, 'b')
+        return s:RunCommand(a:name, l:args)
+    finally
+        call delete(l:content_file)
+    endtry
 endfunction
 
 function! s:EnsureLoggedIn() abort
@@ -550,9 +561,9 @@ function! s:PushFile(file, force) abort
 
     call s:Echo('updating_note', l:note_id, l:file)
     if empty(l:team)
-        let l:result = s:RunCommand('write', {'note_id': l:note_id, 'file': l:file, 'content': l:content})
+        let l:result = s:RunCommandWithContentFile('write', {'note_id': l:note_id, 'file': l:file}, l:content)
     else
-        let l:result = s:RunCommand('team_write', {'note_id': l:note_id, 'file': l:file, 'team': l:team, 'content': l:content})
+        let l:result = s:RunCommandWithContentFile('team_write', {'note_id': l:note_id, 'file': l:file, 'team': l:team}, l:content)
     endif
     if l:result.ok
         let l:hash = s:HashContent(l:content)
