@@ -33,7 +33,7 @@ REQUIREMENTS                                           *hackmd-vim-requirements*
 
 - Vim with +eval
 - `hackmd-cli` installed
-- `hackmd-cli` already authenticated
+- `hackmd-cli` already authenticated, or log in from Vim with |:HLogin|
 
 Check authentication:
 >
@@ -43,12 +43,26 @@ Log in if needed:
 >
   hackmd-cli login
 <
+You can also log in from Vim:
+>
+  :HLogin
+<
 
 ==============================================================================
 COMMANDS                                                   *hackmd-vim-commands*
 
 Commands are available globally. The default mappings are only registered for
 Markdown buffers.
+
+                                                        *:HLogin*
+:HLogin [api-token]
+        Log in to `hackmd-cli` from Vim. With no argument, Vim prompts for a
+        HackMD API token using inputsecret(). The token is passed to
+        `hackmd-cli login` through stdin.
+
+                                                        *:HLogout*
+:HLogout
+        Log out of `hackmd-cli` from Vim.
 
                                                         *:HPush*
 :HPush
@@ -166,6 +180,8 @@ Reuse a shell alias:
 Override command templates:
 >
   let g:hackmd_command_templates = {
+        \ 'login': '{cli} login',
+        \ 'logout': '{cli} logout',
         \ 'create': '{cli} notes create --output=json',
         \ 'team_create': '{cli} team-notes create --teamPath={team} --output=json',
         \ 'write': '{cli} notes update --noteId={note_id} --content={content}',

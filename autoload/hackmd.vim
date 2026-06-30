@@ -3,6 +3,8 @@
 let s:workspace_file = '.hackmd-vim.json'
 
 let s:default_command_templates = {
+            \ 'login': '{cli} login',
+            \ 'logout': '{cli} logout',
             \ 'create': '{cli} notes create --output=json',
             \ 'team_create': '{cli} team-notes create --teamPath={team} --output=json',
             \ 'write': '{cli} notes update --noteId={note_id} --content={content}',
@@ -649,6 +651,32 @@ endfunction
 " 辅助函数：读取当前 buffer 的 YAML front matter 属性。
 function! hackmd#GetFrontMatterProperty(prop_name) abort
     return s:GetBufferProperty(a:prop_name)
+endfunction
+
+function! hackmd#Login(...) abort
+    let l:api_token = a:0 ? a:1 : ''
+    if empty(l:api_token)
+        let l:api_token = inputsecret('HackMD API token: ')
+        echo ''
+    endif
+    if empty(l:api_token)
+        call s:EchoError('HackMD login canceled: empty API token.')
+        return 0
+    endif
+
+    let l:result = s:RunCommand('login', {'api_token': l:api_token}, l:api_token . "\n")
+    if l:result.ok
+        echom 'HackMD login succeeded.'
+    endif
+    return l:result.ok
+endfunction
+
+function! hackmd#Logout() abort
+    let l:result = s:RunCommand('logout', {})
+    if l:result.ok
+        echom 'HackMD logout succeeded.'
+    endif
+    return l:result.ok
 endfunction
 
 " 一键保存并上传当前文件。

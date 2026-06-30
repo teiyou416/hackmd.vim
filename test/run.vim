@@ -46,8 +46,15 @@ setlocal buftype=nofile
 setlocal filetype=startify
 call s:AssertEqual(2, exists(':HWorkspaceInfo'), 'workspace commands should be available outside markdown buffers')
 call s:AssertEqual(2, exists(':HPush'), 'buffer commands should be available outside markdown buffers')
+call s:AssertEqual(2, exists(':HLogin'), 'login command should be available outside markdown buffers')
+call s:AssertEqual(2, exists(':HLogout'), 'logout command should be available outside markdown buffers')
 call hackmd#WorkspaceInfo()
 setlocal buftype=
+
+call s:AssertEqual(1, hackmd#Login('test-api-token'), 'login should succeed with an API token')
+call s:AssertEqual('test-api-token', s:Read(s:remote . '/.api-token'), 'login should pass the API token to hackmd-cli')
+call s:AssertEqual(1, hackmd#Logout(), 'logout should succeed')
+call s:AssertEqual(0, filereadable(s:remote . '/.api-token'), 'logout should remove the fake API token')
 
 let s:workspaces = hackmd#WorkspaceList()
 call s:AssertEqual(2, len(s:workspaces), 'workspace list should parse joined teams')

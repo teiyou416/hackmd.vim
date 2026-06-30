@@ -8,12 +8,14 @@ Vim plugin for editing Markdown locally and syncing notes with HackMD through `h
 
 - Vim with `+eval`
 - `hackmd-cli`
-- an authenticated `hackmd-cli` session
+- an authenticated `hackmd-cli` session, or log in from Vim with `:HLogin`
 
 ```sh
 hackmd-cli whoami
 hackmd-cli login
 ```
+
+You can also run `:HLogin` in Vim and enter your HackMD API token there.
 
 ## Installation
 
@@ -53,6 +55,8 @@ Common commands:
 
 | Command | Description |
 | --- | --- |
+| `:HLogin` | Log in to `hackmd-cli` from Vim with a HackMD API token |
+| `:HLogout` | Log out of `hackmd-cli` from Vim |
 | `:HPush` | Create or update the current note |
 | `:HPush!` | Force push and overwrite remote changes |
 | `:HPull` | Pull the current note by `hackmd_id` |

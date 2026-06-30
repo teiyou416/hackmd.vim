@@ -47,6 +47,13 @@ json_escape() {
 }
 
 case "${1:-}" in
+    login)
+        token="$(cat)"
+        printf '%s' "$token" > "$remote_dir/.api-token"
+        ;;
+    logout)
+        rm -f "$remote_dir/.api-token"
+        ;;
     export)
         note_id="$(arg_value --noteId "$@")"
         cat "$remote_dir/$note_id.md"

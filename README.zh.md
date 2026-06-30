@@ -8,12 +8,14 @@
 
 - 支持 `+eval` 的 Vim
 - `hackmd-cli`
-- 已登录的 `hackmd-cli`
+- 已登录的 `hackmd-cli`，或在 Vim 里用 `:HLogin` 登录
 
 ```sh
 hackmd-cli whoami
 hackmd-cli login
 ```
+
+也可以在 Vim 中执行 `:HLogin`，然后输入自己的 HackMD API token。
 
 ## 安装
 
@@ -53,6 +55,8 @@ team: your-team-path
 
 | 命令 | 作用 |
 | --- | --- |
+| `:HLogin` | 在 Vim 里用 HackMD API token 登录 `hackmd-cli` |
+| `:HLogout` | 在 Vim 里登出 `hackmd-cli` |
 | `:HPush` | 创建或更新当前 note |
 | `:HPush!` | 强制推送并覆盖远端修改 |
 | `:HPull` | 根据 `hackmd_id` 拉取当前 note |
