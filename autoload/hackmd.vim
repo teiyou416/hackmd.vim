@@ -5,6 +5,7 @@ let s:workspace_file = '.hackmd-vim.json'
 let s:default_command_templates = {
             \ 'login': '{cli} login',
             \ 'logout': '{cli} logout',
+            \ 'whoami': '{cli} whoami',
             \ 'create': '{cli} notes create --output=json',
             \ 'team_create': '{cli} team-notes create --teamPath={team} --output=json',
             \ 'write': '{cli} notes update --noteId={note_id} --content={content}',
@@ -46,6 +47,21 @@ function! s:FormatCommand(name, args) abort
 endfunction
 
 function! s:RunCommand(name, args, ...) abort
+    let l:has_input = 0
+    let l:input = ''
+    let l:options = {}
+    if a:0
+        if type(a:1) == type({})
+            let l:options = a:1
+        else
+            let l:has_input = 1
+            let l:input = a:1
+            if a:0 > 1 && type(a:2) == type({})
+                let l:options = a:2
+            endif
+        endif
+    endif
+
     try
         let l:cmd = s:FormatCommand(a:name, a:args)
     catch
@@ -58,19 +74,31 @@ function! s:RunCommand(name, args, ...) abort
         let l:cmd = shellescape(l:shell) . ' -ic ' . shellescape(l:cmd)
     endif
 
-    if a:0
-        let l:output = system(l:cmd, a:1)
+    if l:has_input
+        let l:output = system(l:cmd, l:input)
     else
         let l:output = system(l:cmd)
     endif
     if v:shell_error
-        call s:EchoError('HackMD command failed: ' . l:cmd)
-        if !empty(l:output)
-            echom l:output
+        if !get(l:options, 'quiet', 0)
+            call s:EchoError('HackMD command failed: ' . l:cmd)
+            if !empty(l:output)
+                echom l:output
+            endif
         endif
         return {'ok': 0, 'output': l:output}
     endif
     return {'ok': 1, 'output': l:output}
+endfunction
+
+function! s:EnsureLoggedIn() abort
+    let l:result = s:RunCommand('whoami', {}, {'quiet': 1})
+    if l:result.ok
+        return 1
+    endif
+
+    call s:EchoError('尚未登入 HackMD，请先执行 :HLogin 登入账户。')
+    return 0
 endfunction
 
 function! s:CurrentFileDirOrCwd() abort
@@ -685,6 +713,9 @@ function! hackmd#BufferPush(force) abort
         call s:EchoError('当前 buffer 没有关联文件，无法上传。')
         return
     endif
+    if !s:EnsureLoggedIn()
+        return
+    endif
     write
     call s:PushFile(expand('%:p'), a:force)
     edit
@@ -701,6 +732,9 @@ function! hackmd#BufferPull() abort
         call s:EchoError('当前 buffer 有未保存修改，请先保存或放弃修改后再拉取。')
         return
     endif
+    if !s:EnsureLoggedIn()
+        return
+    endif
 
     if s:PullFile(l:file)
         edit!
@@ -715,6 +749,9 @@ function! hackmd#BufferDelete(force) abort
     endif
     if &modified
         call s:EchoError('当前 buffer 有未保存修改，请先保存或放弃修改后再删除。')
+        return
+    endif
+    if !s:EnsureLoggedIn()
         return
     endif
 
@@ -767,6 +804,9 @@ function! hackmd#WorkspacePush(force) abort
         call s:EchoError('Workspace 中没有找到 Markdown 文件。')
         return
     endif
+    if !s:EnsureLoggedIn()
+        return
+    endif
 
     let l:success = 0
     for l:file in l:files
@@ -781,6 +821,9 @@ function! hackmd#WorkspacePull() abort
     let l:files = s:WorkspaceFiles()
     if empty(l:files)
         call s:EchoError('Workspace 中没有找到 Markdown 文件。')
+        return {'success': 0, 'skipped': 0, 'updated': []}
+    endif
+    if !s:EnsureLoggedIn()
         return {'success': 0, 'skipped': 0, 'updated': []}
     endif
 
@@ -821,6 +864,9 @@ function! hackmd#WorkspaceDelete(force) abort
         call s:EchoError('Workspace 中没有找到 Markdown 文件。')
         return
     endif
+    if !s:EnsureLoggedIn()
+        return
+    endif
 
     let l:success = 0
     let l:skipped = 0
@@ -837,10 +883,16 @@ function! hackmd#WorkspaceDelete(force) abort
 endfunction
 
 function! hackmd#WorkspaceImport() abort
+    if !s:EnsureLoggedIn()
+        return
+    endif
     call s:ImportWorkspaceNotes()
 endfunction
 
 function! hackmd#WorkspaceList() abort
+    if !s:EnsureLoggedIn()
+        return []
+    endif
     return s:ListWorkspaces()
 endfunction
 

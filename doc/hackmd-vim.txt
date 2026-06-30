@@ -64,6 +64,10 @@ Markdown buffers.
 :HLogout
         Log out of `hackmd-cli` from Vim.
 
+Remote commands such as |:HPush|, |:HPull|, and |:HWorkspaceImport| first run
+the `whoami` command template. If the account is not authenticated, the plugin
+stops and asks you to run |:HLogin|.
+
                                                         *:HPush*
 :HPush
         Save the current file, then create or update the remote note.
@@ -182,6 +186,7 @@ Override command templates:
   let g:hackmd_command_templates = {
         \ 'login': '{cli} login',
         \ 'logout': '{cli} logout',
+        \ 'whoami': '{cli} whoami',
         \ 'create': '{cli} notes create --output=json',
         \ 'team_create': '{cli} team-notes create --teamPath={team} --output=json',
         \ 'write': '{cli} notes update --noteId={note_id} --content={content}',

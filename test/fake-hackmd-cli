@@ -54,6 +54,13 @@ case "${1:-}" in
     logout)
         rm -f "$remote_dir/.api-token"
         ;;
+    whoami)
+        if [ ! -s "$remote_dir/.api-token" ]; then
+            echo "not logged in" >&2
+            exit 1
+        fi
+        printf 'test-user\n'
+        ;;
     export)
         note_id="$(arg_value --noteId "$@")"
         cat "$remote_dir/$note_id.md"

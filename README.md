@@ -16,6 +16,7 @@ hackmd-cli login
 ```
 
 You can also run `:HLogin` in Vim and enter your HackMD API token there.
+Remote commands check the current login first and ask you to run `:HLogin` when needed.
 
 ## Installation
 
@@ -110,6 +111,7 @@ If your installed `hackmd-cli` uses different subcommands, override only the com
 
 ```vim
 let g:hackmd_command_templates = {
+      \ 'whoami': '{cli} whoami',
       \ 'workspace_list': '{cli} teams --output=json',
       \ }
 ```

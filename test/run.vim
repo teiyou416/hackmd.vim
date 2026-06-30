@@ -55,6 +55,16 @@ call s:AssertEqual(1, hackmd#Login('test-api-token'), 'login should succeed with
 call s:AssertEqual('test-api-token', s:Read(s:remote . '/.api-token'), 'login should pass the API token to hackmd-cli')
 call s:AssertEqual(1, hackmd#Logout(), 'logout should succeed')
 call s:AssertEqual(0, filereadable(s:remote . '/.api-token'), 'logout should remove the fake API token')
+call s:AssertEqual([], hackmd#WorkspaceList(), 'workspace list should stop when logged out')
+
+let s:unauth_note = s:workspace . '/unauth.md'
+call writefile(['# Unauth title', '', 'body'], s:unauth_note)
+execute 'edit' fnameescape(s:unauth_note)
+call hackmd#BufferPush(0)
+call s:AssertEqual(0, filereadable(s:remote . '/note1.md'), 'push should stop before remote access when logged out')
+call s:AssertEqual('', hackmd#GetFrontMatterProperty('hackmd_id'), 'logged-out push should not bind a note id')
+
+call s:AssertEqual(1, hackmd#Login('test-api-token'), 'login should allow remote commands')
 
 let s:workspaces = hackmd#WorkspaceList()
 call s:AssertEqual(2, len(s:workspaces), 'workspace list should parse joined teams')

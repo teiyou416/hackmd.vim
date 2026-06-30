@@ -16,6 +16,7 @@ hackmd-cli login
 ```
 
 也可以在 Vim 中执行 `:HLogin`，然后输入自己的 HackMD API token。
+远端命令会先检查当前登录状态；未登录时会提示先执行 `:HLogin`。
 
 ## 安装
 
@@ -110,6 +111,7 @@ let g:hackmd_cli = '/path/to/hackmd-cli'
 
 ```vim
 let g:hackmd_command_templates = {
+      \ 'whoami': '{cli} whoami',
       \ 'workspace_list': '{cli} teams --output=json',
       \ }
 ```
