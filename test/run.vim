@@ -86,6 +86,7 @@ let s:local = s:Read(s:note)
 call s:AssertMatch('hackmd_id: note1', s:local, 'push should write note id')
 call s:AssertMatch('hackmd_remote_hash:', s:local, 'push should write remote hash')
 call s:AssertEqual("# Local title\n\nbody", s:Read(s:remote . '/note1.md'), 'remote content should not contain plugin front matter')
+call s:AssertEqual('local', s:Read(s:remote . '/note1.title'), 'new remote note title should come from local filename')
 
 " Pull refreshes local content and preserves metadata.
 call writefile(['# Remote title', '', 'remote body'], s:remote . '/note1.md')

@@ -154,8 +154,8 @@ let s:default_command_templates = {
             \ 'login': '{cli} login',
             \ 'logout': '{cli} logout',
             \ 'whoami': '{cli} whoami',
-            \ 'create': '{cli} notes create --output=json',
-            \ 'team_create': '{cli} team-notes create --teamPath={team} --output=json',
+            \ 'create': '{cli} notes create --title={title} --output=json',
+            \ 'team_create': '{cli} team-notes create --teamPath={team} --title={title} --output=json',
             \ 'write': '{cli} notes update --noteId={note_id} --content={content}',
             \ 'team_write': '{cli} team-notes update --teamPath={team} --noteId={note_id} --content={content}',
             \ 'read': '{cli} export --noteId={note_id}',
@@ -495,18 +495,24 @@ function! s:ParseNoteId(output) abort
     return ''
 endfunction
 
+function! s:TitleForFile(file) abort
+    let l:title = fnamemodify(a:file, ':t:r')
+    return empty(l:title) ? 'Untitled' : l:title
+endfunction
+
 function! s:PushFile(file, force) abort
     let l:file = fnamemodify(a:file, ':p')
     let l:note_id = s:GetFileProperty(l:file, 'hackmd_id')
     let l:team = s:DefaultTeamForFile(l:file)
     let l:content = s:FileContentForRemote(l:file)
+    let l:title = s:TitleForFile(l:file)
 
     if empty(l:note_id)
         call s:Echo('creating_note', l:file)
         if empty(l:team)
-            let l:result = s:RunCommand('create', {'file': l:file, 'content': l:content}, l:content)
+            let l:result = s:RunCommand('create', {'file': l:file, 'content': l:content, 'title': l:title}, l:content)
         else
-            let l:result = s:RunCommand('team_create', {'file': l:file, 'team': l:team, 'content': l:content}, l:content)
+            let l:result = s:RunCommand('team_create', {'file': l:file, 'team': l:team, 'content': l:content, 'title': l:title}, l:content)
         endif
 
         if !l:result.ok

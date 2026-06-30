@@ -52,6 +52,8 @@ team: your-team-path
 # Note title
 ```
 
+New remote notes use the local Markdown filename, without `.md`, as the HackMD title.
+
 Common commands:
 
 | Command | Description |

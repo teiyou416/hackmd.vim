@@ -42,6 +42,16 @@ title_from_content() {
     printf '%s' "$title"
 }
 
+title_for_note() {
+    note_id="$1"
+    content="$2"
+    if [ -f "$remote_dir/$note_id.title" ]; then
+        cat "$remote_dir/$note_id.title"
+    else
+        title_from_content "$content"
+    fi
+}
+
 json_escape() {
     printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
 }
@@ -70,9 +80,13 @@ case "${1:-}" in
             create)
                 content="$(cat)"
                 note_id="$(next_id)"
+                title="$(arg_value --title "$@" || true)"
                 printf '%s' "$content" > "$remote_dir/$note_id.md"
-                title="$(json_escape "$(title_from_content "$content")")"
-                printf '[{"id":"%s","title":"%s"}]\n' "$note_id" "$title"
+                if [ -n "$title" ]; then
+                    printf '%s' "$title" > "$remote_dir/$note_id.title"
+                fi
+                escaped_title="$(json_escape "$(title_for_note "$note_id" "$content")")"
+                printf '[{"id":"%s","title":"%s"}]\n' "$note_id" "$escaped_title"
                 ;;
             update)
                 note_id="$(arg_value --noteId "$@")"
@@ -82,6 +96,7 @@ case "${1:-}" in
             delete)
                 note_id="$(arg_value --noteId "$@")"
                 rm -f "$remote_dir/$note_id.md"
+                rm -f "$remote_dir/$note_id.title"
                 ;;
             *)
                 printf '['
@@ -89,7 +104,7 @@ case "${1:-}" in
                 for file in "$remote_dir"/*.md; do
                     [ -f "$file" ] || continue
                     note_id="$(basename "$file" .md)"
-                    title="$(json_escape "$(title_from_content "$(cat "$file")")")"
+                    title="$(json_escape "$(title_for_note "$note_id" "$(cat "$file")")")"
                     if [ "$first" -eq 0 ]; then
                         printf ','
                     fi

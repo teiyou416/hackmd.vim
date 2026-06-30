@@ -52,6 +52,8 @@ team: your-team-path
 # Note title
 ```
 
+新建远端 note 时，会使用本地 Markdown 文件名（去掉 `.md`）作为 HackMD 标题。
+
 常用命令：
 
 | 命令 | 作用 |

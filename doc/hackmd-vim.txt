@@ -75,7 +75,9 @@ stops and asks you to run |:HLogin|.
 
                                                         *:HPush*
 :HPush
-        Save the current file, then create or update the remote note.
+        Save the current file, then create or update the remote note. New
+        remote notes use the local Markdown filename, without ".md", as the
+        HackMD title.
 
                                                         *:HPush!*
 :HPush!
@@ -204,8 +206,8 @@ Override command templates:
         \ 'login': '{cli} login',
         \ 'logout': '{cli} logout',
         \ 'whoami': '{cli} whoami',
-        \ 'create': '{cli} notes create --output=json',
-        \ 'team_create': '{cli} team-notes create --teamPath={team} --output=json',
+        \ 'create': '{cli} notes create --title={title} --output=json',
+        \ 'team_create': '{cli} team-notes create --teamPath={team} --title={title} --output=json',
         \ 'write': '{cli} notes update --noteId={note_id} --content={content}',
         \ 'team_write': '{cli} team-notes update --teamPath={team} --noteId={note_id} --content={content}',
         \ 'read': '{cli} export --noteId={note_id}',
