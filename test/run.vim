@@ -91,6 +91,14 @@ call s:AssertEqual(1, len(s:imported), 'workspace import should create a missing
 call s:AssertMatch('hackmd_id: note2', s:Read(s:imported[0]), 'imported note should have note id')
 call s:AssertMatch('# Imported note', s:Read(s:imported[0]), 'imported note should contain remote content')
 
+" Workspace pull reports only files whose local content changed.
+call writefile(['# Workspace remote update', '', 'changed by remote'], s:remote . '/note1.md')
+let s:pull_result = hackmd#WorkspacePull()
+call s:AssertEqual(2, s:pull_result.success, 'workspace pull should pull bound files')
+call s:AssertEqual(1, len(s:pull_result.updated), 'workspace pull should report one changed local file')
+call s:AssertEqual(fnamemodify(s:note, ':p'), s:pull_result.updated[0], 'workspace pull should report the changed file')
+call s:AssertMatch('# Workspace remote update', s:Read(s:note), 'workspace pull should update changed local file')
+
 " Delete removes the remote note and unbinds the local file.
 let s:delete_note = s:workspace . '/delete-me.md'
 call writefile(['# Delete me'], s:delete_note)

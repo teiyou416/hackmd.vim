@@ -380,17 +380,17 @@ function! s:PushFile(file, force) abort
     return l:result.ok
 endfunction
 
-function! s:PullFile(file) abort
+function! s:PullFileResult(file) abort
     let l:file = fnamemodify(a:file, ':p')
     let l:note_id = s:GetFileProperty(l:file, 'hackmd_id')
     if empty(l:note_id)
         call s:EchoError('缺少 hackmd_id，无法拉取: ' . l:file)
-        return 0
+        return {'ok': 0, 'updated': 0, 'file': l:file}
     endif
 
     let l:result = s:RunCommand('read', {'note_id': l:note_id})
     if !l:result.ok
-        return 0
+        return {'ok': 0, 'updated': 0, 'file': l:file}
     endif
 
     let l:lines = split(l:result.output, "\n", 1)
@@ -403,9 +403,19 @@ function! s:PullFile(file) abort
     if !empty(l:team)
         let l:lines = s:SetFrontMatterPropertyInLines(l:lines, 'team', l:team)
     endif
-    call writefile(l:lines, l:file)
-    echom '拉取成功: ' . l:file
-    return 1
+
+    let l:updated = s:ReadFileLines(l:file) !=# l:lines
+    if l:updated
+        call writefile(l:lines, l:file)
+        echom '拉取成功，已更新本地文件: ' . l:file
+    else
+        echom '拉取成功，本地文件无变化: ' . l:file
+    endif
+    return {'ok': 1, 'updated': l:updated, 'file': l:file}
+endfunction
+
+function! s:PullFile(file) abort
+    return s:PullFileResult(a:file).ok
 endfunction
 
 function! s:DeleteFile(file, force) abort
@@ -743,21 +753,33 @@ function! hackmd#WorkspacePull() abort
     let l:files = s:WorkspaceFiles()
     if empty(l:files)
         call s:EchoError('Workspace 中没有找到 Markdown 文件。')
-        return
+        return {'success': 0, 'skipped': 0, 'updated': []}
     endif
 
     let l:success = 0
     let l:skipped = 0
+    let l:updated = []
     for l:file in l:files
         if empty(s:GetFileProperty(l:file, 'hackmd_id'))
             let l:skipped += 1
             continue
         endif
-        if s:PullFile(l:file)
+        let l:result = s:PullFileResult(l:file)
+        if l:result.ok
             let l:success += 1
+            if l:result.updated
+                call add(l:updated, l:result.file)
+            endif
         endif
     endfor
-    echom 'Workspace pull 完成: ' . l:success . '/' . len(l:files) . '，跳过无 hackmd_id 文件: ' . l:skipped
+    echom 'Workspace pull 完成: ' . l:success . '/' . len(l:files) . '，跳过无 hackmd_id 文件: ' . l:skipped . '，更新本地文件: ' . len(l:updated)
+    if !empty(l:updated)
+        echom '更新的文件:'
+        for l:file in l:updated
+            echom '  ' . l:file
+        endfor
+    endif
+    return {'success': l:success, 'skipped': l:skipped, 'updated': l:updated}
 endfunction
 
 function! hackmd#WorkspaceDelete(force) abort

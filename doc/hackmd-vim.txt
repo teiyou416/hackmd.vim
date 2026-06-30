@@ -100,7 +100,8 @@ Markdown buffers.
 
                                                         *:HWorkspacePull*
 :HWorkspacePull
-        Pull all workspace files that already have `hackmd_id`.
+        Pull all workspace files that already have `hackmd_id`, then report how
+        many local files changed and list those files.
 
                                                         *:HWorkspacePush*
 :HWorkspacePush
