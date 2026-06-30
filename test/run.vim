@@ -48,6 +48,12 @@ call s:AssertEqual(2, exists(':HWorkspaceInfo'), 'workspace commands should be a
 call s:AssertEqual(2, exists(':HPush'), 'buffer commands should be available outside markdown buffers')
 call s:AssertEqual(2, exists(':HLogin'), 'login command should be available outside markdown buffers')
 call s:AssertEqual(2, exists(':HLogout'), 'logout command should be available outside markdown buffers')
+call s:AssertEqual(2, exists(':HLanguage'), 'language command should be available outside markdown buffers')
+call s:AssertEqual('en', hackmd#Language(), 'language should default to English')
+HLanguage zh
+call s:AssertEqual('zh', g:hackmd_language, 'HLanguage should switch prompts to Chinese')
+call s:AssertEqual('zh', hackmd#Language('invalid'), 'invalid language should keep the current language')
+call s:AssertEqual('en', hackmd#Language('en'), 'language should switch prompts back to English')
 call hackmd#WorkspaceInfo()
 setlocal buftype=
 

@@ -64,6 +64,11 @@ Markdown buffers.
 :HLogout
         Log out of `hackmd-cli` from Vim.
 
+                                                        *:HLanguage*
+:HLanguage [en|zh]
+        Show or set the prompt language. English is the default. `zh` selects
+        Chinese prompts.
+
 Remote commands such as |:HPush|, |:HPull|, and |:HWorkspaceImport| first run
 the `whoami` command template. If the account is not authenticated, the plugin
 stops and asks you to run |:HLogin|.
@@ -170,6 +175,18 @@ CONFIGURATION                                         *hackmd-vim-configuration*
 Default CLI executable:
 >
   let g:hackmd_cli = 'hackmd-cli'
+<
+Default prompt language:
+>
+  let g:hackmd_language = 'en'
+<
+Use Chinese prompts:
+>
+  :HLanguage zh
+<
+or:
+>
+  let g:hackmd_language = 'zh'
 <
 Use another executable or absolute path:
 >

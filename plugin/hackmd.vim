@@ -8,6 +8,7 @@ let g:loaded_vim_hackmd = 1
 " 注册命令，workspace 命令需要能在 startify 等无文件 buffer 中使用。
 command! -nargs=? HLogin call hackmd#Login(<q-args>)
 command! HLogout call hackmd#Logout()
+command! -nargs=? -complete=customlist,hackmd#CompleteLanguage HLanguage call hackmd#Language(<q-args>)
 command! -bang HPush call hackmd#BufferPush(<bang>0)
 command! HPull call hackmd#BufferPull()
 command! -bang HDelete call hackmd#BufferDelete(<bang>0)

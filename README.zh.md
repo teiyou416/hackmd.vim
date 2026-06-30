@@ -58,6 +58,7 @@ team: your-team-path
 | --- | --- |
 | `:HLogin` | 在 Vim 里用 HackMD API token 登录 `hackmd-cli` |
 | `:HLogout` | 在 Vim 里登出 `hackmd-cli` |
+| `:HLanguage [en\|zh]` | 查看或设置提示语言 |
 | `:HPush` | 创建或更新当前 note |
 | `:HPush!` | 强制推送并覆盖远端修改 |
 | `:HPull` | 根据 `hackmd_id` 拉取当前 note |
@@ -99,12 +100,25 @@ workspace 命令会从当前文件目录向上查找配置。在 startify 这类
 
 ```vim
 let g:hackmd_cli = 'hackmd-cli'
+let g:hackmd_language = 'en'
 ```
 
 如果命令路径不同：
 
 ```vim
 let g:hackmd_cli = '/path/to/hackmd-cli'
+```
+
+提示语言默认是英文。切换到中文：
+
+```vim
+:HLanguage zh
+```
+
+也可以写进 vimrc：
+
+```vim
+let g:hackmd_language = 'zh'
 ```
 
 如果你安装的 `hackmd-cli` 子命令不同，只覆盖需要调整的模板：

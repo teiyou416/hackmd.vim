@@ -58,6 +58,7 @@ Common commands:
 | --- | --- |
 | `:HLogin` | Log in to `hackmd-cli` from Vim with a HackMD API token |
 | `:HLogout` | Log out of `hackmd-cli` from Vim |
+| `:HLanguage [en\|zh]` | Show or set the prompt language |
 | `:HPush` | Create or update the current note |
 | `:HPush!` | Force push and overwrite remote changes |
 | `:HPull` | Pull the current note by `hackmd_id` |
@@ -99,12 +100,25 @@ Defaults:
 
 ```vim
 let g:hackmd_cli = 'hackmd-cli'
+let g:hackmd_language = 'en'
 ```
 
 Use an absolute path if needed:
 
 ```vim
 let g:hackmd_cli = '/path/to/hackmd-cli'
+```
+
+Prompt messages default to English. Switch to Chinese with:
+
+```vim
+:HLanguage zh
+```
+
+Or set it in your vimrc:
+
+```vim
+let g:hackmd_language = 'zh'
 ```
 
 If your installed `hackmd-cli` uses different subcommands, override only the command templates you need:
